@@ -9,3 +9,15 @@ admission/**/db_backup_*
 # Logs
 **/error_log
 **/*.log
+
+# Applicant uploads — staged for migration to S3 / ZevCloud Storage.
+# Files live on the developer's local disk and (post-migration) in
+# object storage; they never belong in source control or the deployable
+# container image. .gitkeep files preserve the folder structure so PHP
+# upload paths still resolve at runtime.
+admission/storage/passport/*
+admission/storage/credential/*
+admission/storage/payment/*
+!admission/storage/passport/.gitkeep
+!admission/storage/credential/.gitkeep
+!admission/storage/payment/.gitkeep
