@@ -1,0 +1,30 @@
+# Keep the build context small + don't ship anything the runtime
+# shouldn't see. The nested portal/.git is especially important —
+# leaving it would let an attacker fetch /portal/.git/config.
+
+.git
+.gitignore
+.gitattributes
+portal/.git
+portal/.dccache
+portal/.vscode
+portal/error_log
+portal/.hintrc
+
+# OS junk
+.DS_Store
+**/.DS_Store
+Thumbs.db
+
+# Local dev artefacts
+*.log
+*.sql.gz
+*.tar.gz
+*.zip
+.env
+.env.*
+node_modules/
+
+# Documentation that doesn't need to ship to prod
+README.md
+DEPLOY.md
