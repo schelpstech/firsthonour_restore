@@ -1,0 +1,7 @@
+RewriteEngine on
+
+# Legacy subdomain → /portal redirect. Kept so existing bookmarks and
+# search results still land users in the right place after migration.
+RewriteCond %{HTTP_HOST} ^portal\.firsthonourschools\.com\.ng$ [OR]
+RewriteCond %{HTTP_HOST} ^www\.portal\.firsthonourschools\.com\.ng$
+RewriteRule ^/?$ "https\:\/\/firsthonour\.sch\.ng\/portal" [R=301,L]

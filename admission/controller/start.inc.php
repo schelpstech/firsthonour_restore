@@ -1,0 +1,29 @@
+<?php
+
+// begin or resume session
+session_start();
+
+// Include necessary file
+include_once 'user.class.php';
+include_once 'model.class.php';
+
+// database access parameters
+$db_host = getenv('DB_HOST') ?: 'localhost';
+$db_user = getenv('DB_USER') ?: 'root';
+$db_pass = getenv('DB_PASS') ?: '';
+$db_name = getenv('DB_NAME') ?: 'firsthon_lhp';
+
+// connect to database
+try {
+    $db_conn = new PDO("mysql:host={$db_host};dbname={$db_name}", $db_user, $db_pass);
+    $db_conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    array_push($errors, $e->getMessage());
+}
+
+
+
+// make use of database with users
+$user = new User($db_conn);
+$model = new Model($db_conn);
+$utility = new Model($db_conn);
