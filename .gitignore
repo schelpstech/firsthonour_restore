@@ -1,6 +1,10 @@
-# Database backups — too large for git and don't belong in deployable images
+# Database backups + dumps — too large for git and don't belong in deployable images
 portal/learn/app/db_backup_*
 admission/**/db_backup_*
+*.sql
+*.sql.gz
+*.sql.zip
+*.dump
 
 # macOS junk
 .DS_Store

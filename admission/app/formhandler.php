@@ -1,6 +1,7 @@
 <?php
 require_once('../controller/start.inc.php');
 require_once('../controller/utility.class.php');
+require_once(__DIR__ . '/../lib/storage_upload.php');
 $utility = new Utility();
 
 
@@ -119,12 +120,9 @@ if (isset($_POST['action']) && ($_POST['action'] == 'application_begin')) {
             $errormsg .= ' Invalid File format. Only JPG, JPEG and PNG files allowed. <br/>';
         }
         $passport = $form_number . "." . $fileExtension;
-        // directory in which the uploaded file will be moved
-        $dir = '../storage/passport/';
-        $dest_path = $dir . $passport;
         if ($errormsg == '') {
 
-            if (move_uploaded_file($fileTmpPath, $dest_path)) {
+            if (admission_storage_upload($fileTmpPath, 'passport', $passport)) {
 
                 $tblName = 'application_tbl';
                 $conditions = array(
@@ -262,12 +260,9 @@ if (isset($_POST['action']) && ($_POST['action'] == 'application_begin')) {
             $errormsg .= ' Invalid File format. Only PDF, JPG, JPEG and PNG files allowed. <br/>';
         }
         $last_result = $form_number . "." . $fileExtension;
-        // directory in which the uploaded file will be moved
-        $dir = '../storage/credential/';
-        $dest_path = $dir . $last_result;
         if ($errormsg == '') {
 
-            if (move_uploaded_file($fileTmpPath, $dest_path)) {
+            if (admission_storage_upload($fileTmpPath, 'credential', $last_result)) {
 
                 $tblName = 'application_tbl';
                 $conditions = array(
@@ -595,12 +590,9 @@ if (isset($_POST['action']) && ($_POST['action'] == 'application_begin')) {
             $errormsg .= ' Invalid File format. Only JPG, JPEG and PNG files allowed. <br/>';
         }
         $payment_receipt = $form_number . "." . $fileExtension;
-        // directory in which the uploaded file will be moved
-        $dir = '../storage/payment/';
-        $dest_path = $dir . $payment_receipt;
         if ($errormsg == '') {
 
-            if (move_uploaded_file($fileTmpPath, $dest_path)) {
+            if (admission_storage_upload($fileTmpPath, 'payment', $payment_receipt)) {
 
                 $tblName = 'application_tbl';
                 $conditions = array(

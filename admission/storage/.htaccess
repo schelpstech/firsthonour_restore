@@ -1,0 +1,8 @@
+# Route every storage subpath through the proxy so the existing
+# /admission/storage/{passport,credential,payment}/FILE.ext URLs
+# continue working when files actually live in S3.
+#
+# Real requests for index.php itself are not rewritten (the regex
+# requires a slash after the type folder).
+RewriteEngine On
+RewriteRule ^(passport|credential|payment)/(.+)$ index.php?type=$1&file=$2 [L,QSA]
