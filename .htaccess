@@ -1,0 +1,26 @@
+# Root .htaccess — keeps things working behind Coolify's reverse proxy.
+#
+# Why this exists: hitting /portal (no trailing slash) used to make
+# Apache's mod_dir emit a 301 to /portal/ with the container's
+# internal port (`:3000`) leaked into the URL. The Dockerfile already
+# disables canonical-port injection (UseCanonicalName/PhysicalPort
+# Off), but the proxy chain still ends up advertising the wrong port
+# in self-referenced redirects.
+#
+# Cleanest fix: skip the redirect entirely. Internally rewrite the
+# directory-style URLs so Apache serves /portal/index.php directly
+# for /portal, /admission/index.php for /admission, etc. No 301
+# ever goes back to the browser, so there's no port to leak.
+
+RewriteEngine On
+
+# If a directory path is requested without a trailing slash AND that
+# directory has an index file, serve the index file inline instead
+# of redirecting. Matches /portal, /admission, /portal/learn, etc.
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^(.+[^/])$ $1/index.php [L]
+
+# Same idea for the trailing-slash case where Apache would otherwise
+# need a separate round-trip to resolve the DirectoryIndex.
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^(.+)/$ $1/index.php [L]
