@@ -30,6 +30,17 @@ RUN { \
 # at "None" which silently disables .htaccess.
 RUN sed -ri 's!AllowOverride None!AllowOverride All!g' /etc/apache2/apache2.conf
 
+# Behind a reverse proxy: trust the Host header verbatim, never inject
+# the container's listening port into self-referenced URLs. Without
+# these, Apache's trailing-slash redirect (e.g. /portal -> /portal/)
+# leaks the internal port through to the customer's browser. Also set
+# a generic ServerName so Apache stops warning at startup.
+RUN { \
+      echo 'ServerName localhost'; \
+      echo 'UseCanonicalName Off'; \
+      echo 'UseCanonicalPhysicalPort Off'; \
+    } >> /etc/apache2/apache2.conf
+
 COPY --chown=www-data:www-data . /var/www/html/
 
 EXPOSE 80
