@@ -31,8 +31,13 @@ class S3Client {
         $this->endpoint  = rtrim((string)(getenv('S3_ENDPOINT') ?: ''), '/');
         $this->region    = (string)(getenv('S3_REGION') ?: 'us-east-1');
         $this->bucket    = (string)(getenv('S3_BUCKET') ?: '');
-        $this->accessKey = (string)(getenv('S3_ACCESS_KEY') ?: '');
-        $this->secretKey = (string)(getenv('S3_SECRET_KEY') ?: '');
+        // Accept both AWS-canonical names (which ZevCloud's storage
+        // console injects via its Connect-to-a-service flow) and the
+        // shorter S3_ACCESS_KEY / S3_SECRET_KEY pair, so the same
+        // code works whether vars were injected automatically or
+        // pasted in manually.
+        $this->accessKey = (string)(getenv('S3_ACCESS_KEY_ID') ?: getenv('S3_ACCESS_KEY') ?: '');
+        $this->secretKey = (string)(getenv('S3_SECRET_ACCESS_KEY') ?: getenv('S3_SECRET_KEY') ?: '');
         $this->prefix    = trim((string)(getenv('S3_PREFIX') ?: 'admission'), '/');
     }
 
