@@ -541,13 +541,13 @@ INNER JOIN lhpsubject s
     ON s.sbjid = w.subjid
 
 WHERE w.lid = ?
-AND w.term = ?
+AND w.term = ? AND w.classid = ?
 
 GROUP BY w.subjid
 ORDER BY sbjname
 ");
 
-                    $stmt->bind_param("ss", $lname, $term);
+                    $stmt->bind_param("sss", $lname, $term, $cclass);
                     $stmt->execute();
 
                     $result = $stmt->get_result();
@@ -598,7 +598,7 @@ ORDER BY sbjname
                     ?>
 
                       <tr>
-                        <td><?= strtoupper(htmlspecialchars($row['sbjname'])) ?> - (<?= $row['subjid'] ?>)</td>
+                        <td><?= strtoupper(htmlspecialchars($row['sbjname'])) ?></td>
 
 
                         <td><?= $week1 ?></td>
