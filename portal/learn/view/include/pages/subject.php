@@ -54,6 +54,12 @@
                                             </a>
                                     </div>
                                     <div class="single_media_card">
+                                        <span>CBT Assessments</span>
+                                            <a href="../../app/router.php?pageid=cbt&subjectid=<?php echo $subject_list['sbjid'] ?>">
+                                                <h3><?php echo $subject_list['cbt'] ?? 0 ?> </h3>
+                                            </a>
+                                    </div>
+                                    <div class="single_media_card">
                                         <span>Submitted Assignments</span>
                                             <a href="../../app/router.php?pageid=work&subjectid=<?php echo $subject_list['sbjid'] ?>">
                                                 <h3><?php echo $subject_list['feedback'] ?> </h3>

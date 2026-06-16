@@ -9,6 +9,8 @@
         include 'pages/selectnote.php';
     } elseif ($_SESSION['pageid'] == 'task') {
         include 'pages/selectask.php';
+    } elseif ($_SESSION['pageid'] == 'cbt') {
+        include 'pages/selectcbt.php';
     } elseif ($_SESSION['pageid'] == 'scheme') {
         include 'pages/viewscheme.php';
     } elseif ($_SESSION['pageid'] == 'work') {

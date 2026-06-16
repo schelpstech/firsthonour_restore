@@ -8,6 +8,8 @@
         include 'pages/viewnote.php';
     } elseif ($_SESSION['pageid'] == 'task') {
         include 'pages/viewtask.php';
+    } elseif ($_SESSION['pageid'] == 'cbt') {
+        include 'pages/viewcbt.php';
     } elseif ($_SESSION['pageid'] == 'work') {
         include 'pages/viewwork.php';
     }elseif ($_SESSION['pageid'] == 'scheme') {
@@ -48,6 +50,8 @@
         include 'payment/paynow.php';
     } elseif ($_SESSION['pageid'] == 'resources' && $_SESSION['item'] == 'add_cbt') {
         include 'form/createcbt.php';
+    } elseif ($_SESSION['pageid'] == 'resources' && $_SESSION['item'] == 'manage_cbt' && isset($_SESSION['item_ref'])) {
+        include 'form/managecbt.php';
     }
 ?>
 </section>

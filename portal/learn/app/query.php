@@ -69,6 +69,49 @@ if (isset($_SESSION['subjectid']) && isset($_SESSION['pageid']) &&  $_SESSION['p
     $list_task = $model->getRows($tblName, $conditions);
 }
 
+//List of CBT Assessments
+if (isset($_SESSION['subjectid']) && isset($_SESSION['pageid']) &&  $_SESSION['pageid'] == 'cbt') {
+    if (isset($_SESSION['user_type']) && $_SESSION['user_type'] === 'Learner') {
+        $sql = 'SELECT cbt.*, lhpsubject.sbjname, lhpscheme.topic, lhpscheme.week,
+                    attempt.score AS attempt_score, attempt.total_mark AS attempt_total
+                FROM lhp_cbt_assessment cbt
+                LEFT JOIN lhpsubject ON cbt.sbjid = lhpsubject.sbjid
+                LEFT JOIN lhpscheme ON cbt.topicid = lhpscheme.schmid
+                LEFT JOIN lhp_cbt_attempt attempt
+                    ON cbt.cbtid = attempt.cbtid AND attempt.learnerid = :learnerid
+                WHERE cbt.sbjid = :subjectid
+                    AND cbt.term = :term
+                    AND cbt.classid = (SELECT classid FROM lhpuser WHERE uname = :learnerid_for_class LIMIT 1)
+                    AND cbt.status = 1
+                ORDER BY lhpscheme.week ASC, cbt.created_at ASC';
+        $query = $db_conn->prepare($sql);
+        $query->execute([
+            ':learnerid' => $_SESSION['active'],
+            ':learnerid_for_class' => $_SESSION['active'],
+            ':subjectid' => $_SESSION['subjectid'],
+            ':term' => $active_term['term'],
+        ]);
+        $list_cbt = $query->fetchAll(PDO::FETCH_ASSOC);
+    } elseif (isset($_SESSION['user_type']) && $_SESSION['user_type'] === 'Instructor') {
+        $sql = 'SELECT cbt.*, lhpsubject.sbjname, lhpscheme.topic, lhpscheme.week
+                FROM lhp_cbt_assessment cbt
+                LEFT JOIN lhpsubject ON cbt.sbjid = lhpsubject.sbjid
+                LEFT JOIN lhpscheme ON cbt.topicid = lhpscheme.schmid
+                WHERE cbt.sbjid = :subjectid
+                    AND cbt.term = :term
+                    AND cbt.staffid = :staffid
+                    AND cbt.status = 1
+                ORDER BY lhpscheme.week ASC, cbt.created_at ASC';
+        $query = $db_conn->prepare($sql);
+        $query->execute([
+            ':subjectid' => $_SESSION['subjectid'],
+            ':term' => $active_term['term'],
+            ':staffid' => $_SESSION['active'],
+        ]);
+        $list_cbt = $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+}
+
 //List of Topics- Scheme of work
 if (isset($_SESSION['ref']) && isset($_SESSION['pageid']) && $_SESSION['pageid'] == 'scheme') {
     $tblName = 'lhpscheme';
@@ -193,6 +236,70 @@ if (isset($_SESSION['ref']) && isset($_SESSION['pageid']) && $_SESSION['pageid']
         ),
     );
     $view_task = $model->getRows($tblName, $conditions);
+}
+
+//CBT Assessment Details
+if (isset($_SESSION['ref']) && isset($_SESSION['pageid']) && $_SESSION['pageid'] == 'cbt') {
+    $sql = 'SELECT cbt.*, lhpsubject.sbjname, lhpscheme.topic, lhpscheme.week, lhpstaff.staffname
+            FROM lhp_cbt_assessment cbt
+            LEFT JOIN lhpsubject ON cbt.sbjid = lhpsubject.sbjid
+            LEFT JOIN lhpscheme ON cbt.topicid = lhpscheme.schmid
+            LEFT JOIN lhpstaff ON cbt.staffid = lhpstaff.sname
+            WHERE cbt.cbtid = :cbtid AND cbt.status = 1
+            LIMIT 1';
+    $query = $db_conn->prepare($sql);
+    $query->execute([':cbtid' => $_SESSION['ref']]);
+    $cbt_details = $query->fetch(PDO::FETCH_ASSOC);
+
+    $sql = 'SELECT *
+            FROM lhp_cbt_question
+            WHERE cbtid = :cbtid AND status = 1
+            ORDER BY questionid ASC';
+    $query = $db_conn->prepare($sql);
+    $query->execute([':cbtid' => $_SESSION['ref']]);
+    $cbt_questions = $query->fetchAll(PDO::FETCH_ASSOC);
+
+    if (isset($_SESSION['user_type']) && $_SESSION['user_type'] === 'Learner') {
+        $sql = 'SELECT *
+                FROM lhp_cbt_attempt
+                WHERE cbtid = :cbtid AND learnerid = :learnerid
+                LIMIT 1';
+        $query = $db_conn->prepare($sql);
+        $query->execute([
+            ':cbtid' => $_SESSION['ref'],
+            ':learnerid' => $_SESSION['active'],
+        ]);
+        $cbt_attempt = $query->fetch(PDO::FETCH_ASSOC);
+    }
+}
+
+//CBT Question Manager - Instructor
+if (isset($_SESSION['pageid'], $_SESSION['item'], $_SESSION['item_ref'])
+    && $_SESSION['pageid'] == 'resources'
+    && $_SESSION['item'] == 'manage_cbt'
+    && isset($_SESSION['user_type'])
+    && $_SESSION['user_type'] === 'Instructor') {
+    $sql = 'SELECT cbt.*, lhpsubject.sbjname, lhpscheme.topic, lhpscheme.week, lhpclass.classname
+            FROM lhp_cbt_assessment cbt
+            LEFT JOIN lhpsubject ON cbt.sbjid = lhpsubject.sbjid
+            LEFT JOIN lhpscheme ON cbt.topicid = lhpscheme.schmid
+            LEFT JOIN lhpclass ON cbt.classid = lhpclass.classid
+            WHERE cbt.cbtid = :cbtid AND cbt.staffid = :staffid AND cbt.status = 1
+            LIMIT 1';
+    $query = $db_conn->prepare($sql);
+    $query->execute([
+        ':cbtid' => $_SESSION['item_ref'],
+        ':staffid' => $_SESSION['active'],
+    ]);
+    $cbt_details = $query->fetch(PDO::FETCH_ASSOC);
+
+    $sql = 'SELECT *
+            FROM lhp_cbt_question
+            WHERE cbtid = :cbtid AND status = 1
+            ORDER BY questionid ASC';
+    $query = $db_conn->prepare($sql);
+    $query->execute([':cbtid' => $_SESSION['item_ref']]);
+    $cbt_questions = $query->fetchAll(PDO::FETCH_ASSOC);
 }
 
 
@@ -329,6 +436,7 @@ $conditions = array(
                     lhpalloc.classid, lhpalloc.term, lhpfeedback.fid, lhpclass.classid, lhpclass.classname, 
                     COUNT(DISTINCT lhpnote.sbjid) AS note,
                     COUNT(DISTINCT lhpquestion.sbjid) AS task,
+                    COUNT(DISTINCT lhp_cbt_assessment.cbtid) AS cbt,
                     COUNT(DISTINCT lhpfeedback.sbjid) AS feedback,
                     COUNT(DISTINCT lhpscheme.subject) AS topic',
     'where' => array(
@@ -344,6 +452,7 @@ $conditions = array(
     'joinl' => array(
         'lhpnote' => ' ON lhpalloc.sbjid = lhpnote.sbjid AND lhpnote.status = 1 AND lhpnote.term = "' . $active_term["term"] . '"',
         'lhpquestion' => ' ON lhpalloc.sbjid = lhpquestion.sbjid AND lhpquestion.status = 1 AND lhpquestion.term = "' . $active_term["term"] . '"',
+        'lhp_cbt_assessment' => ' ON lhpalloc.sbjid = lhp_cbt_assessment.sbjid AND lhp_cbt_assessment.status = 1 AND lhp_cbt_assessment.term = "' . $active_term["term"] . '" AND lhp_cbt_assessment.classid = "' . $learner_profile["classid"] . '"',
         'lhpfeedback' => ' ON lhpalloc.sbjid = lhpfeedback.sbjid AND lhpfeedback.stdid = "' . $_SESSION['active'] . '" AND lhpfeedback.term = "' . $active_term["term"] . '"',
         'lhpscheme' => ' ON lhpalloc.sbjid = lhpscheme.subject AND lhpscheme.status = 1 AND lhpscheme.term = "' . $active_term["term"] . '"',
     ),
@@ -580,6 +689,7 @@ $subject_list = $model->getRows($tblName, $conditions);
                     (SELECT count(lhpalloc.aid) FROM lhpalloc WHERE lhpalloc.term ="' . $active_term["term"] . '"and lhpalloc.staffid ="' . $_SESSION["active"] . '") as subject ,
                     (SELECT count(lhpnote.sbjid) FROM lhpnote WHERE  lhpnote.status = 1 and lhpnote.term ="' . $active_term["term"] . '"and lhpnote.staffid ="' . $_SESSION["active"] . '") as note ,
                     (SELECT count(lhpquestion.questid) FROM lhpquestion WHERE  lhpquestion.status = 1 and lhpquestion.term ="' . $active_term["term"] . '"and lhpquestion.staffid ="' . $_SESSION["active"] . '") as task ,
+                    (SELECT count(lhp_cbt_assessment.cbtid) FROM lhp_cbt_assessment WHERE  lhp_cbt_assessment.status = 1 and lhp_cbt_assessment.term ="' . $active_term["term"] . '"and lhp_cbt_assessment.staffid ="' . $_SESSION["active"] . '") as cbt ,
                     (SELECT count(lhpclassalloc.classlocid) FROM lhpclassalloc WHERE  lhpclassalloc.term ="' . $active_term["term"] . '"and lhpclassalloc.tutorid ="' . $_SESSION["active"] . '") as class
                     ',
         'where' => array(
@@ -600,6 +710,7 @@ $conditions = array(
         COUNT(DISTINCT lhpscheme.schmid) AS topic,
         COUNT(DISTINCT lhpnote.sbjid) AS note,
         COUNT(DISTINCT lhpquestion.questid) AS task,
+        COUNT(DISTINCT lhp_cbt_assessment.cbtid) AS cbt,
         COUNT(DISTINCT lhpfeedback.fid) AS feedback
     ',
     'where' => array(
@@ -615,6 +726,7 @@ $conditions = array(
     'joinl' => array(
         'lhpnote' => ' on lhpalloc.sbjid = lhpnote.sbjid AND lhpnote.status = 1 AND lhpnote.term = "' . $active_term["term"] . '" AND lhpnote.staffid = "' . $_SESSION["active"] . '" ',
         'lhpquestion' => ' on lhpalloc.sbjid = lhpquestion.sbjid AND lhpquestion.status = 1 AND lhpquestion.term = "' . $active_term["term"] . '"AND lhpquestion.staffid = "' . $_SESSION["active"] . '" ',
+        'lhp_cbt_assessment' => ' on lhpalloc.sbjid = lhp_cbt_assessment.sbjid AND lhp_cbt_assessment.status = 1 AND lhp_cbt_assessment.term = "' . $active_term["term"] . '" AND lhp_cbt_assessment.staffid = "' . $_SESSION["active"] . '" ',
         'lhpscheme' => ' on lhpalloc.sbjid = lhpscheme.subject AND lhpscheme.status = 1 AND lhpscheme.term = "' . $active_term["term"] . '" AND lhpscheme.staffid = "' . $_SESSION["active"] . '"',
         'lhpfeedback' => ' on lhpalloc.sbjid = lhpfeedback.sbjid AND lhpfeedback.term = "' . $active_term["term"] . '"',
     ),

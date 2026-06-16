@@ -11,11 +11,17 @@ if (isset($_GET['pageid'])) {
   } elseif ($pageid == 'subject' && $_SESSION['user_type'] === "Learner") {
     $_SESSION['pageid'] = $pageid;
     $model->redirect('../view/include/selector.php');
+  } elseif ($pageid == 'cbt' && $_SESSION['user_type'] === "Learner") {
+    $_SESSION['pageid'] = $pageid;
+    $model->redirect('../view/include/selector.php');
   } elseif ($pageid == 'index' && $_SESSION['user_type'] === "Instructor") {
     $model->redirect('../view/instructor/index.php');
   } elseif ($pageid == 'overview' && $_SESSION['user_type'] === "Instructor") {
     $model->redirect('../view/instructor/notice.php');
   } elseif ($pageid == 'subject' && $_SESSION['user_type'] === "Instructor") {
+    $_SESSION['pageid'] = $pageid;
+    $model->redirect('../view/include/selector.php');
+  } elseif ($pageid == 'cbt' && $_SESSION['user_type'] === "Instructor") {
     $_SESSION['pageid'] = $pageid;
     $model->redirect('../view/include/selector.php');
   }
