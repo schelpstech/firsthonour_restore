@@ -526,7 +526,7 @@ if (!empty($tutor)) {
 
                     $stmt = $con->prepare("
     SELECT
-        s.sbjname,
+        s.sbjname, w.subjid,
 
         MAX(CASE WHEN w.week='Week 1' THEN w.score ELSE 0 END) AS week1,
         MAX(CASE WHEN w.week='Week 2' THEN w.score ELSE 0 END) AS week2,
