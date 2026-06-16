@@ -598,8 +598,8 @@ if (!empty($tutor)) {
                     ?>
 
                       <tr>
-                        <td><?= strtoupper(htmlspecialchars($row['sbjname'])) ?></td>
-
+                        <td><?= strtoupper(htmlspecialchars($row['sbjname'])) ?> - (<?= $row['subjid'] ?>)</td>
+             
 
                         <td><?= $week1 ?></td>
                         <td><?= $week2 ?></td>
