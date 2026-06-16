@@ -525,26 +525,26 @@ if (!empty($tutor)) {
                     <?php
 
                     $stmt = $con->prepare("
-    SELECT
-        s.sbjname, w.subjid,
+SELECT
+    w.subjid,
+    MAX(s.sbjname) AS sbjname,
 
-        MAX(CASE WHEN w.week='Week 1' THEN w.score ELSE 0 END) AS week1,
-        MAX(CASE WHEN w.week='Week 2' THEN w.score ELSE 0 END) AS week2,
-        MAX(CASE WHEN w.week='Week 3' THEN w.score ELSE 0 END) AS week3,
-        MAX(CASE WHEN w.week='Week 4' THEN w.score ELSE 0 END) AS week4,
-        MAX(CASE WHEN w.week='Week 5' THEN w.score ELSE 0 END) AS week5,
-        MAX(CASE WHEN w.week='Week 6' THEN w.score ELSE 0 END) AS week6
+    MAX(CASE WHEN w.week='Week 1' THEN w.score ELSE 0 END) AS week1,
+    MAX(CASE WHEN w.week='Week 2' THEN w.score ELSE 0 END) AS week2,
+    MAX(CASE WHEN w.week='Week 3' THEN w.score ELSE 0 END) AS week3,
+    MAX(CASE WHEN w.week='Week 4' THEN w.score ELSE 0 END) AS week4,
+    MAX(CASE WHEN w.week='Week 5' THEN w.score ELSE 0 END) AS week5,
+    MAX(CASE WHEN w.week='Week 6' THEN w.score ELSE 0 END) AS week6
 
-    FROM lhpweekrecord w
+FROM lhpweekrecord w
+INNER JOIN lhpsubject s
+    ON s.sbjid = w.subjid
 
-    INNER JOIN lhpsubject s
-        ON s.sbjid = w.subjid
+WHERE w.lid = ?
+AND w.term = ?
 
-    WHERE w.lid = ?
-      AND w.term = ?
-
-    GROUP BY w.subjid
-    ORDER BY s.sbjname ASC
+GROUP BY w.subjid
+ORDER BY sbjname
 ");
 
                     $stmt->bind_param("ss", $lname, $term);
@@ -599,7 +599,7 @@ if (!empty($tutor)) {
 
                       <tr>
                         <td><?= strtoupper(htmlspecialchars($row['sbjname'])) ?> - (<?= $row['subjid'] ?>)</td>
-             
+
 
                         <td><?= $week1 ?></td>
                         <td><?= $week2 ?></td>
